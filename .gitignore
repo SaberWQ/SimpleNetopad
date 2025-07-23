@@ -5,3 +5,22 @@ SimpleNotepad 2.sln
 SimpleNotepad.sln
 SimpleNotepad 3.sln
 SimpleNotepad 4.sln
+.DS_Store
+*.user
+*.suo
+*.vscode
+*.ncb
+*.sdf
+*.opensdf
+*.cache
+*.log
+*.pdb
+*.ilk
+*.idb
+*.opendb
+*.tlog
+*.dbmdl   
+*.dbproj.schemaview
+*.dbmdl.user
+*.dbmdl.schemaview
+*.dbmdl.user.schemaview
