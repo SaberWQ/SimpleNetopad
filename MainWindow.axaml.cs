@@ -1,51 +1,77 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Microsoft.Win32;
 using System.IO;
-using System.Threading.Tasks;
 
-namespace SimpleNotepad;
-
-public partial class MainWindow : Window
+namespace SimpleNotepad
 {
-    public MainWindow()
+    public partial class MainWindow : Window
     {
-        InitializeComponent(); // Це працює, якщо x:Class у XAML вказано
-    }
-
-    private async void OpenFile_Click(object? sender, RoutedEventArgs e)
-    {
-        var file = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+        public MainWindow()
         {
-            Title = "Open text file",
-            AllowMultiple = false,
-            FileTypeFilter = new[]
-            {
-                new Avalonia.Platform.Storage.FilePickerFileType("Text Files") { Patterns = new[] { "*.txt" } }
-            }
-        });
-
-        if (file.Count > 0)
-        {
-            var content = await File.ReadAllTextAsync(file[0].Path.LocalPath);
-            Editor.Text = content;
+            InitializeComponent();
         }
-    }
 
-    private async void SaveFile_Click(object? sender, RoutedEventArgs e)
-    {
-        var file = await StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
+        private void NewFile_Click(object sender, RoutedEventArgs e)
         {
-            Title = "Save text file",
-            SuggestedFileName = "NewFile.txt",
-            FileTypeChoices = new[]
+            var newTab = new TabItem
             {
-                new Avalonia.Platform.Storage.FilePickerFileType("Text Files") { Patterns = new[] { "*.txt" } }
-            }
-        });
+                Header = "Untitled",
+                Content = new TextBox
+                {
+                    AcceptsReturn = true,
+                    AcceptsTab = true,
+                    FontSize = 14,
+                    TextWrapping = Avalonia.Media.TextWrapping.Wrap
+                }
+            };
+            TabView.Items.Add(newTab);
+        }
 
-        if (file != null)
+        [System.Obsolete]
+        private async void OpenFile_Click(object sender, RoutedEventArgs e)
         {
-            await File.WriteAllTextAsync(file.Path.LocalPath, Editor.Text);
+            var dialog = new OpenFileDialog();
+            var result = await dialog.ShowAsync(this);
+            if (result != null && result.Length > 0)
+            {
+                string path = result[0];
+                string text = File.ReadAllText(path);
+                var newTab = new TabItem
+                {
+                    Header = Path.GetFileName(path),
+                    Content = new TextBox
+                    {
+                        Text = text,
+                        AcceptsReturn = true,
+                        AcceptsTab = true,
+                        FontSize = 14,
+                        TextWrapping = Avalonia.Media.TextWrapping.Wrap
+                    }
+                };
+                TabView.Items.Add(newTab);
+            }
+        }
+
+        [System.Obsolete]
+        private async void SaveFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (TabView.SelectedItem is TabItem tab &&
+                tab.Content is TextBox editor)
+            {
+                var dialog = new SaveFileDialog();
+                var result = await dialog.ShowAsync(this);
+                if (!string.IsNullOrEmpty(result))
+                {
+                    File.WriteAllText(result, editor.Text);
+                    tab.Header = Path.GetFileName(result);
+                }
+            }
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
     }
 }
